@@ -28,8 +28,8 @@ Anyone can clone this repository, update a single config file, and connect it to
 ## 1️⃣ Clone the Repository
 
 ```bash
-git clone https://github.com/your-username/your-repo-name.git
-cd your-repo-name
+git clone https://github.com/mensahlloyd1998/rn-startup-kit
+cd rn-startup-kit
 npm install
 ```
 
@@ -72,10 +72,11 @@ Your backend must use **Laravel Sanctum**.
 Required routes in `routes/api.php`:
 
 ```php
-Route::post('/api/login', [AuthController::class, 'login']);
-Route::post('/api/register', [AuthController::class, 'register']);
-Route::post('/api/forgot-password', [AuthController::class, 'forgotPassword']);
-Route::post('/api/reset-password', [AuthController::class, 'resetPassword']);
+Route::post('/login', [AuthController::class, 'login']);
+Route::post('/register', [AuthController::class, 'register']);
+Route::post('/forgot-password', [AuthController::class, 'forgotPassword']);
+Route::post('/reset-password', [AuthController::class, 'resetPassword']);
+
 ```
 
 ---
