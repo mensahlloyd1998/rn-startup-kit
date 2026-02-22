@@ -1,50 +1,351 @@
-# Welcome to your Expo app 👋
+Here’s a complete and professional **README.md** you can use for your repository, including additional setup steps you may have missed (Sanctum config, CORS, CSRF, headers, environment setup, etc.).
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+You can copy this directly into your `README.md` file.
 
-## Get started
+---
 
-1. Install dependencies
+# React Native Auth Starter Kit (Laravel Sanctum Ready)
 
-   ```bash
-   npm install
-   ```
+A production-ready **React Native startup kit** with authentication pre-configured and ready to connect to a **Laravel Sanctum backend**.
 
-2. Start the app
+This starter includes:
 
-   ```bash
-   npx expo start
-   ```
+* ✅ Login
+* ✅ Register
+* ✅ Forgot Password
+* ✅ Reset Password
+* ✅ API service layer
+* ✅ Token handling
+* ✅ Clean project structure
+* ✅ Easy backend configuration
 
-In the output, you'll find options to open the app in a
+Anyone can clone this repository, update a single config file, and connect it to their Laravel backend.
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+---
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+# 🚀 Getting Started
 
-## Get a fresh project
-
-When you're ready, run:
+## 1️⃣ Clone the Repository
 
 ```bash
-npm run reset-project
+git clone https://github.com/your-username/your-repo-name.git
+cd your-repo-name
+npm install
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+or
 
-## Learn more
+```bash
+yarn install
+```
 
-To learn more about developing your project with Expo, look at the following resources:
+---
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+## 2️⃣ Update API URL
 
-## Join the community
+Go to:
 
-Join our community of developers creating universal apps.
+```
+constants/api.js
+```
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+Update:
+
+```js
+export const API_URL = "http://your-backend-url.com";
+```
+
+Example:
+
+```js
+export const API_URL = "http://192.168.1.10:8000";
+```
+
+⚠️ If using a physical device, do NOT use `localhost`. Use your machine's local IP.
+
+---
+
+# 🛠 Laravel Backend Requirements
+
+Your backend must use **Laravel Sanctum**.
+
+Required routes in `routes/api.php`:
+
+```php
+Route::post('/api/login', [AuthController::class, 'login']);
+Route::post('/api/register', [AuthController::class, 'register']);
+Route::post('/api/forgot-password', [AuthController::class, 'forgotPassword']);
+Route::post('/api/reset-password', [AuthController::class, 'resetPassword']);
+```
+
+---
+
+# 🔐 Laravel Sanctum Setup (IMPORTANT)
+
+Make sure Sanctum is properly configured.
+
+## 1️⃣ Install Sanctum
+
+```bash
+composer require laravel/sanctum
+```
+
+Publish config:
+
+```bash
+php artisan vendor:publish --provider="Laravel\Sanctum\SanctumServiceProvider"
+```
+
+Run migrations:
+
+```bash
+php artisan migrate
+```
+
+---
+
+## 2️⃣ Add Sanctum Middleware
+
+In `app/Http/Kernel.php`, ensure:
+
+```php
+'api' => [
+    \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
+    'throttle:api',
+    \Illuminate\Routing\Middleware\SubstituteBindings::class,
+],
+```
+
+---
+
+## 3️⃣ Configure CORS
+
+In `config/cors.php`:
+
+```php
+'paths' => ['api/*', 'sanctum/csrf-cookie'],
+'supports_credentials' => true,
+```
+
+If using local development:
+
+```php
+'allowed_origins' => ['*'],
+```
+
+---
+
+## 4️⃣ Authentication Response Format
+
+Your backend should return a JSON response like:
+
+### Login Response Example
+
+```json
+{
+  "user": {
+    "id": 1,
+    "name": "John Doe",
+    "email": "john@example.com"
+  },
+  "token": "1|long-sanctum-token-string"
+}
+```
+
+Make sure your controller generates token like:
+
+```php
+$token = $user->createToken('auth_token')->plainTextToken;
+```
+
+---
+
+# 📦 Expected Protected Route Setup
+
+Protected routes should use:
+
+```php
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/user', function (Request $request) {
+        return $request->user();
+    });
+});
+```
+
+---
+
+# 📱 React Native Auth Flow
+
+The app expects:
+
+* Token returned on login/register
+* Token stored locally (AsyncStorage or secure storage)
+* Token sent in headers:
+
+```js
+Authorization: Bearer {token}
+Accept: application/json
+```
+
+---
+
+# 🧠 Things You Might Miss (Important)
+
+## ✅ 1. Accept Header
+
+Laravel requires:
+
+```http
+Accept: application/json
+```
+
+Without this, validation errors may return HTML instead of JSON.
+
+---
+
+## ✅ 2. HTTPS in Production
+
+Sanctum requires HTTPS in production. Make sure:
+
+* You use SSL
+* `SESSION_SECURE_COOKIE=true` in `.env`
+
+---
+
+## ✅ 3. CSRF (If Using SPA Mode)
+
+If you are NOT using token-based authentication and instead using cookie-based SPA authentication, you must first call:
+
+```
+/sanctum/csrf-cookie
+```
+
+However, this starter kit assumes **token-based authentication**, which does NOT require CSRF cookies.
+
+---
+
+## ✅ 4. Password Reset Setup
+
+Ensure your Laravel app has:
+
+* Mail configured in `.env`
+* `APP_URL` correctly set
+* `FRONTEND_URL` if generating reset links
+
+Example `.env` mail setup:
+
+```
+MAIL_MAILER=smtp
+MAIL_HOST=smtp.mailtrap.io
+MAIL_PORT=2525
+MAIL_USERNAME=your_username
+MAIL_PASSWORD=your_password
+MAIL_ENCRYPTION=tls
+```
+
+---
+
+## ✅ 5. Validation Errors Format
+
+Ensure Laravel returns errors like:
+
+```json
+{
+  "message": "The given data was invalid.",
+  "errors": {
+    "email": ["The email field is required."]
+  }
+}
+```
+
+---
+
+# 🗂 Project Structure
+
+```
+/components
+/screens
+/navigation
+/services
+/constants
+/context
+```
+
+---
+
+# 🔄 Example AuthController (Laravel)
+
+```php
+public function login(Request $request)
+{
+    $request->validate([
+        'email' => 'required|email',
+        'password' => 'required'
+    ]);
+
+    if (!Auth::attempt($request->only('email', 'password'))) {
+        return response()->json([
+            'message' => 'Invalid credentials'
+        ], 401);
+    }
+
+    $user = Auth::user();
+    $token = $user->createToken('auth_token')->plainTextToken;
+
+    return response()->json([
+        'user' => $user,
+        'token' => $token
+    ]);
+}
+```
+
+---
+
+# 🧪 Testing
+
+Run Laravel backend:
+
+```bash
+php artisan serve
+```
+
+Run React Native:
+
+```bash
+npx react-native run-android
+```
+
+or
+
+```bash
+npx react-native run-ios
+```
+
+---
+
+# 🛡 Security Recommendations
+
+* Use HTTPS in production
+* Use environment variables for API URL
+* Consider using Secure Storage instead of AsyncStorage
+* Implement token refresh if needed
+* Rate-limit login attempts
+
+---
+
+# 🤝 Contributing
+
+Pull requests are welcome. For major changes, please open an issue first.
+
+---
+
+# 📄 License
+
+MIT
+
+---
+
+# ⭐ Support
+
+If this starter kit helps you, consider giving it a star ⭐
+
