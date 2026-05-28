@@ -1,8 +1,4 @@
-Here’s a complete and professional **README.md** you can use for your repository, including additional setup steps you may have missed (Sanctum config, CORS, CSRF, headers, environment setup, etc.).
 
-You can copy this directly into your `README.md` file.
-
----
 
 # React Native Auth Starter Kit (Laravel Sanctum Ready)
 
